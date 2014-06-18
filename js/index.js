@@ -1,4 +1,5 @@
 // Now some basic canvas stuff. Here we'll make a variable for the canvas and then initialize its 2d context for drawing
+
 var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
@@ -11,45 +12,29 @@ canvas.height = H; canvas.width = W;
 
 
 var Synth = function(audiolet) {
+    var frequency=440;
+    var attack=0.01;
+    var release=0.6;
     AudioletGroup.apply(this, [audiolet, 0, 1]);
     // Basic wave
-    this.saw = new Saw(audiolet, 100);
-
-    // Frequency LFO
-    this.frequencyLFO = new Sine(audiolet, 2);
-    this.frequencyMA = new MulAdd(audiolet, 10, 100);
-
-    // Filter
-    this.filter = new LowPassFilter(audiolet, 1000);
-
-    // Filter LFO
-    this.filterLFO = new Sine(audiolet, 8);
-    this.filterMA = new MulAdd(audiolet, 900, 1000);
+    this.sine = new Sine(audiolet, frequency);
 
     // Gain envelope
     this.gain = new Gain(audiolet);
-    this.env = new ADSREnvelope(audiolet,
-                                1, // Gate
-                                0.01, // Attack
-                                0.2, // Decay
-                                0.1, // Sustain
-                                0.6); // Release
+    this.env = new PercussiveEnvelope(audiolet, 1, attack, release,
+      function() {
+        this.audiolet.scheduler.addRelative(0, this.remove.bind(this));
+      }.bind(this)
+    );
+    this.envMulAdd = new MulAdd(audiolet, 0.2, 0);
 
     // Main signal path
-    this.saw.connect(this.filter);
-    this.filter.connect(this.gain);
+    this.sine.connect(this.gain);
     this.gain.connect(this.outputs[0]);
 
-    // Frequency LFO
-    this.frequencyLFO.connect(this.frequencyMA);
-    this.frequencyMA.connect(this.saw);
-
-    // Filter LFO
-    this.filterLFO.connect(this.filterMA);
-    this.filterMA.connect(this.filter, 0, 1);
-
     // Envelope
-    this.env.connect(this.gain, 0, 1);
+    this.env.connect(this.envMulAdd);
+    this.envMulAdd.connect(this.gain, 0, 1);
 };
 extend(Synth, AudioletGroup);
 
@@ -80,6 +65,7 @@ ball = {
   // Velocity components
   vx: 8,
   vy: 6,
+  audiolet : new Audiolet(),
 
 
 
@@ -92,26 +78,9 @@ ball = {
     ctx.closePath();
   },
 
-  music: function(){
-    audiolet = new Audiolet();
-    synth = new Synth(audiolet);
-
-    var frequencyPattern = new PSequence([0.25]);
-    var filterLFOPattern = new PChoose([0.25]);
-    var gatePattern = new PSequence([0.25]);
-
-    var patterns = [frequencyPattern, filterLFOPattern, gatePattern];
-    audiolet.scheduler.play(patterns, 2,
-        function(frequency, filterLFOFrequency, gate) {
-            this.frequencyMA.add.setValue(frequency);
-            this.filterLFO.frequency.setValue(filterLFOFrequency);
-            this.env.gate.setValue(gate);
-        }.bind(synth)
-    );
-  }(),
-
   play: function() {
-    synth.connect(audiolet.output);
+    this.synth = new Synth( this.audiolet);
+    this.synth.connect( this.audiolet.output );
   }
 
 };
