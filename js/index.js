@@ -117,7 +117,6 @@ ball = {
 };
 
 // When we do animations in canvas, we have to repaint the whole canvas in each frame. Either clear the whole area or paint it with some color. This helps in keeping the area clean without any repetition mess.
-// So, lets create a function that will do it for us.
 function clearCanvas() {
   ctx.clearRect(0, 0, W, H);
 }
@@ -125,7 +124,6 @@ function clearCanvas() {
 function bounce(){
     // Now, lets make the ball move by adding the velocity vectors to its position
   ball.y += ball.vy;
-  // Ohh! The ball is moving!
   // Lets add some acceleration
   ball.vy += gravity;
   //Perfect! Now, lets make it rebound when it touches the floor
@@ -146,10 +144,9 @@ function bounce(){
 
     // Now, lets make the ball move by adding the velocity vectors to its position
   ball.x += ball.vx;
-  // Ohh! The ball is moving!
   // Lets add some acceleration
   ball.vx += gravity;
-  //Perfect! Now, lets make it rebound when it touches the floor
+  //Now, lets make it rebound when it touches the floor
   if(ball.x + ball.radius > W) {
     // First, reposition the ball on top of the floor and then bounce it!
     ball.x = W - ball.radius;
@@ -173,10 +170,5 @@ function update() {
   bounce();
 }
 
-// Now, the animation time!
 // in setInterval, 1000/x depicts x fps! So, in this casse, we are aiming for 60fps for smoother animations.
 setInterval(update, 1000/60);
-
-// This completes the tutorial here. Try experimenting with different values to get a better understanding.
-
-// Also, try playing with the x-component of velocity ;)
