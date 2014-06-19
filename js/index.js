@@ -4,7 +4,7 @@ var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
 // Now setting the width and height of the canvas
-var W = 960,
+var W = 760,
     H = 500;
 
 // Applying these to the canvas element
@@ -60,7 +60,7 @@ ball = {
   y: 50,
   
   radius: 15,
-  color: "red",
+  color: "#DC3D24",
   
   // Velocity components
   vx: 8,
@@ -140,4 +140,10 @@ function update() {
 }
 
 // in setInterval, 1000/x depicts x fps! So, in this casse, we are aiming for 60fps for smoother animations.
-setInterval(update, 1000/60);
+
+function stop() {
+    clearInterval(refreshIntervalID);
+}
+function start(){
+  refreshIntervalID = setInterval(update, 1000/60);
+}
