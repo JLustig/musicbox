@@ -42,7 +42,8 @@ extend(Synth, AudioletGroup);
 // First of all we'll create a ball object which will contain all the methods and variables specific to the ball.
 // Lets define some variables first
 
-var ball = {},
+var balls = [],
+    nrofballs=3,
     gravity = 0,
     bounceFactor = 1,
     audiolet,
@@ -55,7 +56,7 @@ var ball = {},
 // 3) Velocity vectors
 // 4) the method to draw or paint it on the canvas
 
-ball = {
+function createBall(){return {
   x: W/2,
   y: 50,
   
@@ -63,11 +64,9 @@ ball = {
   color: "#DC3D24",
   
   // Velocity components
-  vx: 8,
-  vy: 6,
+  vx: Math.random() * (10 - 1) + 1,
+  vy: Math.random() * (10 - 1) + 1,
   audiolet : new Audiolet(),
-
-
 
   draw: function() {
     // Here, we'll first begin drawing the path and then use the arc() function to draw the circle. The arc function accepts 6 parameters, x position, y position, radius, start angle, end angle and a boolean for anti-clockwise direction.
@@ -83,14 +82,14 @@ ball = {
     this.synth.connect( this.audiolet.output );
   }
 
-};
+};}
 
 // When we do animations in canvas, we have to repaint the whole canvas in each frame. Either clear the whole area or paint it with some color. This helps in keeping the area clean without any repetition mess.
 function clearCanvas() {
   ctx.clearRect(0, 0, W, H);
 }
 
-function bounce(){
+function bounce(ball){
     // Now, lets make the ball move by adding the velocity vectors to its position
   ball.y += ball.vy;
   // Lets add some acceleration
@@ -135,8 +134,10 @@ function bounce(){
 // A function that will update the position of the ball is also needed. Lets create one
 function update() {
   clearCanvas();
-  ball.draw();
-  bounce();
+  for(j=0;j<balls.length;j++){
+    balls[j].draw();
+    bounce(balls[j]);
+  }
 }
 
 // in setInterval, 1000/x depicts x fps! So, in this casse, we are aiming for 60fps for smoother animations.
@@ -146,4 +147,9 @@ function stop() {
 }
 function start(){
   refreshIntervalID = setInterval(update, 1000/60);
+}
+
+for (i=0;i<nrofballs;i++){
+  balls.splice(i,0,createBall());
+  console.log(balls);
 }
