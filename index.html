@@ -2,14 +2,23 @@
 <meta charset="utf-8">
 <title>musicbox</title>
 <link rel="stylesheet" type="text/css" href="css/style.css">
-<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="css/smoothness/jquery.ui.theme.css">
 <script src="js/libs/audiolet.dependencies.js"></script>
 <script src="js/libs/audiolet.min.js"></script>
-<script src="js/libs/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <body>
 <div id="container">
-<button class="button" onclick="start()">PLAY</button>
-<button class="button" onclick="stop()">PAUSE</button>
+	<button class="button" onclick="start()">PLAY</button>
+	<button class="button" onclick="stop()">PAUSE</button>
+	<div id="slidercontainer">
+		<p>
+  		<label for="frequency">Frequency:</label>
+ 		<input type="input" id="frequency" style="border:0; color:#f6931f; font-weight:bold;">
+		</p>
+		<div id="slider"></div>
+	</div>
 </div>
 <canvas id="canvas">
 </canvas>

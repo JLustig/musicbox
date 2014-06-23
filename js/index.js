@@ -10,9 +10,26 @@ var W = 760,
 // Applying these to the canvas element
 canvas.height = H; canvas.width = W;
 
+//Slidebar JQuery UI
 
-var Synth = function(audiolet) {
-    var frequency=440;
+$(function() {
+  $( "#slider" ).slider({
+      value:440,
+      min: 0,
+      max: 1000,
+      step: 1,
+      slide: function( event, ui ) {
+        $( "#frequency" ).val(ui.value + " Hz" );
+      }
+    });
+    $( "#frequency" ).val( $( "#slider").slider( "value" ) + " Hz" );
+  });
+
+
+
+var Synth = function(audiolet){
+    var frequency = parseInt(document.getElementById('frequency').value);
+    console.log(frequency);
     var attack=0.01;
     var release=0.6;
     AudioletGroup.apply(this, [audiolet, 0, 1]);

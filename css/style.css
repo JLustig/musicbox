@@ -5,6 +5,7 @@
 }
 
 #container{
+	color:#FFFFFF;
 	float: right;
 	background-color: #232B2B;
 	width:200px;
@@ -13,4 +14,10 @@
 
 button{
 	background-color:#E3AE57;
+	margin: 10px 10px 10px 10px;
+}
+
+#slidercontainer{
+	width:80%;
+	margin:10px 10px 10px 10%;
 }
