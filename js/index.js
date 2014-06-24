@@ -1,37 +1,18 @@
 // Now some basic canvas stuff. Here we'll make a variable for the canvas and then initialize its 2d context for drawing
-
 var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
 // Now setting the width and height of the canvas
 var W = 760,
-    H = 500;
+    H = 760;
 
 // Applying these to the canvas element
 canvas.height = H; canvas.width = W;
 
-//Slidebar JQuery UI
-
-$(function() {
-  $( "#slider" ).slider({
-      value:440,
-      min: 0,
-      max: 1000,
-      step: 1,
-      slide: function( event, ui ) {
-        $( "#frequency" ).val(ui.value + " Hz" );
-      }
-    });
-    $( "#frequency" ).val( $( "#slider").slider( "value" ) + " Hz" );
-  });
-
-
-
-var Synth = function(audiolet){
-    var frequency = parseInt(document.getElementById('frequency').value);
+var Synth = function(audiolet,frequency,release,attack){
     console.log(frequency);
-    var attack=0.01;
-    var release=0.6;
+    console.log(release);
+    console.log(attack);
     AudioletGroup.apply(this, [audiolet, 0, 1]);
     // Basic wave
     this.sine = new Sine(audiolet, frequency);
@@ -55,30 +36,22 @@ var Synth = function(audiolet){
 };
 extend(Synth, AudioletGroup);
 
-
-// First of all we'll create a ball object which will contain all the methods and variables specific to the ball.
-// Lets define some variables first
-
 var balls = [],
     nrofballs=3,
     gravity = 0,
     bounceFactor = 1,
     audiolet,
-    synth;
+    synth,
+    frequency,
+    release,
+    attack;
 
-// The ball object
-// It will contain the following details
-// 1) Its x and y position
-// 2) Radius and color
-// 3) Velocity vectors
-// 4) the method to draw or paint it on the canvas
-
-function createBall(){return {
+function createBall(i){return {
   x: W/2,
   y: 50,
   
   radius: 15,
-  color: "#DC3D24",
+  color: 'rgb(' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ')',
   
   // Velocity components
   vx: Math.random() * (10 - 1) + 1,
@@ -95,7 +68,10 @@ function createBall(){return {
   },
 
   play: function() {
-    this.synth = new Synth( this.audiolet);
+    this.frequency = parseInt(document.getElementById('frequency'+i).value);
+    this.attack=parseFloat(document.getElementById('attack'+i).value);
+    this.release=parseFloat(document.getElementById('release'+i).value);
+    this.synth = new Synth( this.audiolet,this.frequency,this.release,this.attack);
     this.synth.connect( this.audiolet.output );
   }
 
@@ -107,48 +83,32 @@ function clearCanvas() {
 }
 
 function bounce(ball){
-    // Now, lets make the ball move by adding the velocity vectors to its position
   ball.y += ball.vy;
-  // Lets add some acceleration
   ball.vy += gravity;
-  //Perfect! Now, lets make it rebound when it touches the floor
   if(ball.y + ball.radius > H) {
-    // First, reposition the ball on top of the floor and then bounce it!
     ball.y = H - ball.radius;
     ball.vy *= -bounceFactor;
     ball.play();
-    // The bounceFactor variable that we created decides the elasticity or how elastic the collision will be. If it's 1, then the collision will be perfectly elastic. If 0, then it will be inelastic.
   }
   if(ball.y - ball.radius < 0) {
-    // First, reposition the ball on top of the floor and then bounce it!
     ball.y = 0 + ball.radius;
     ball.vy *= -bounceFactor;
     ball.play();
-    // The bounceFactor variable that we created decides the elasticity or how elastic the collision will be. If it's 1, then the collision will be perfectly elastic. If 0, then it will be inelastic.
   }
-
-    // Now, lets make the ball move by adding the velocity vectors to its position
   ball.x += ball.vx;
-  // Lets add some acceleration
   ball.vx += gravity;
-  //Now, lets make it rebound when it touches the floor
   if(ball.x + ball.radius > W) {
-    // First, reposition the ball on top of the floor and then bounce it!
     ball.x = W - ball.radius;
     ball.vx *= -bounceFactor;
     ball.play();
-    // The bounceFactor variable that we created decides the elasticity or how elastic the collision will be. If it's 1, then the collision will be perfectly elastic. If 0, then it will be inelastic.
   }
   if(ball.x - ball.radius < 0) {
-    // First, reposition the ball on top of the floor and then bounce it!
     ball.x = 0 + ball.radius;
     ball.vx *= -bounceFactor;
     ball.play();
-    // The bounceFactor variable that we created decides the elasticity or how elastic the collision will be. If it's 1, then the collision will be perfectly elastic. If 0, then it will be inelastic.
   }
 }
 
-// A function that will update the position of the ball is also needed. Lets create one
 function update() {
   clearCanvas();
   for(j=0;j<balls.length;j++){
@@ -166,7 +126,138 @@ function start(){
   refreshIntervalID = setInterval(update, 1000/60);
 }
 
+//Slidebar JQuery UI
+function createSliders(i){
+    var output = document.getElementById('buttoncontainer');
+    var val="";
+
+    var ballbutton = document.createElement("button");
+    ballbutton.setAttribute("id","ballbutton"+i);
+    ballbutton.innerHTML="Ball " +i;
+    output.appendChild(ballbutton);
+
+    output = document.getElementById('slidercontainer');
+
+    if(!document.getElementById('slidercontainer'+i))
+    {
+        var div = document.createElement("div");
+        div.innerHTML="Ball nr: " +i;
+        div.setAttribute("id","sliderview"+i);
+        div.setAttribute("style","display:none;");
+
+        //Frequency
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var frequencylabel = document.createElement("label");
+        frequencylabel.setAttribute("for","frequency"+i);
+        frequencylabel.innerHTML="Frequency:";
+        var frequencyinput = document.createElement("input");
+        frequencyinput.setAttribute("type","input");
+        frequencyinput.setAttribute("id","frequency"+i);
+        var frequencyslider = document.createElement("div");
+        frequencyslider.setAttribute("id","frequencyslider"+i)
+        p.appendChild(frequencylabel);
+        p.appendChild(frequencyinput);
+        p.appendChild(frequencyslider);
+
+        //Release
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var releaselabel = document.createElement("label");
+        releaselabel.setAttribute("for","release"+i);
+        releaselabel.innerHTML="Release:";
+        var releaseinput = document.createElement("input");
+        releaseinput.setAttribute("type","input");
+        releaseinput.setAttribute("id","release"+i);
+        var releaseslider = document.createElement("div");
+        releaseslider.setAttribute("id","releaseslider"+i)
+        p.appendChild(releaselabel);
+        p.appendChild(releaseinput);
+        p.appendChild(releaseslider);
+
+        //Attack
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var attacklabel = document.createElement("label");
+        attacklabel.setAttribute("for","attack"+i);
+        attacklabel.innerHTML="Attack:";
+        var attackinput = document.createElement("input");
+        attackinput.setAttribute("type","input");
+        attackinput.setAttribute("id","attack"+i);
+        var attackslider = document.createElement("div");
+        attackslider.setAttribute("id","attackslider"+i)
+        p.appendChild(attacklabel);
+        p.appendChild(attackinput);
+        p.appendChild(attackslider);
+        output.appendChild(div);
+    }
+    /*
+   <p>
+    <label for="frequency">Frequency:</label>
+    <input type="input" id="frequency" style="border:0; color:#f6931f; font-weight:bold;">
+    </p>
+    <div id="frequencyslider"></div>
+    <p>
+    <label for="release">Release</label>
+    <input type="input" id="release" style="border:0; color:#f6931f; font-weight:bold;">
+    </p>
+    <div id="releaseslider"></div>
+    <p>
+    <label for="attack">Attack</label>
+    <input type="input" id="attack" style="border:0; color:#f6931f; font-weight:bold;">
+    </p>
+    <div id="attackslider"></div>
+*/
+  $(function() {
+    $( "#frequencyslider" + i ).slider({
+        value:440,
+        min: 0,
+        max: 1000,
+        step: 1,
+        slide: function( event, ui ) {
+          $( "#frequency" + i ).val(ui.value + " Hz" );
+        }
+      });
+      $( "#frequency" + i).val( $( "#frequencyslider" + i).slider( "value" ) + " Hz" );
+    });
+  $(function() {
+    $( "#releaseslider" + i).slider({
+        value:0.6,
+        min: 0.01,
+        max: 10,
+        step: 0.01,
+        slide: function( event, ui ) {
+          $( "#release" + i ).val(ui.value );
+        }
+      });
+      $( "#release" + i ).val( $( "#releaseslider" + i).slider( "value" ) );
+    });
+  $(function() {
+    $( "#attackslider" + i ).slider({
+        value:0.01,
+        min: 0.001,
+        max: 1,
+        step: 0.001,
+        slide: function( event, ui ) {
+          $( "#attack" + i).val(ui.value);
+        }
+      });
+      $( "#attack" + i).val( $( "#attackslider" + i).slider( "value" ) );
+    });
+
+  //Hide & Show buttons
+  $(document).ready(function(){
+    $("#ballbutton"+i).click(function(){
+      for(j=0;j<nrofballs;j++){
+        $("#sliderview"+j).hide();
+      }
+      $("#sliderview"+i).show();
+    });
+  });
+}
+
 for (i=0;i<nrofballs;i++){
-  balls.splice(i,0,createBall());
+  balls.splice(i,0,createBall(i));
   console.log(balls);
+  createSliders(i);
 }
