@@ -10,9 +10,9 @@ var W = 760,
 canvas.height = H; canvas.width = W;
 
 var Synth = function(audiolet,frequency,release,attack){
-    console.log(frequency);
-    console.log(release);
-    console.log(attack);
+    //console.log(frequency);
+    //console.log(release);
+    //console.log(attack);
     AudioletGroup.apply(this, [audiolet, 0, 1]);
     // Basic wave
     this.sine = new Sine(audiolet, frequency);
@@ -37,7 +37,9 @@ var Synth = function(audiolet,frequency,release,attack){
 extend(Synth, AudioletGroup);
 
 var balls = [],
-    nrofballs=3,
+    nrofballs=4,
+    startx=[10,0,5],
+    starty=[10,-10,0],
     gravity = 0,
     bounceFactor = 1,
     audiolet,
@@ -46,16 +48,17 @@ var balls = [],
     release,
     attack;
 
-function createBall(i){return {
+function createBall(i,startvel){return {
   x: W/2,
-  y: 50,
+  y: H/2,
+  drag:false,
   
   radius: 15,
   color: 'rgb(' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ')',
   
   // Velocity components
-  vx: Math.random() * (10 - 1) + 1,
-  vy: Math.random() * (10 - 1) + 1,
+  vx:startx[i],
+  vy:starty[i],
   audiolet : new Audiolet(),
 
   draw: function() {
@@ -68,9 +71,11 @@ function createBall(i){return {
   },
 
   play: function() {
-    this.frequency = parseInt(document.getElementById('frequency'+i).value);
+    this.frequency = parseFloat(document.getElementById('frequency'+i).value);
     this.attack=parseFloat(document.getElementById('attack'+i).value);
     this.release=parseFloat(document.getElementById('release'+i).value);
+    //this.vx=parseInt(document.getElementById('vx'+i).value);
+    //this.vy=parseInt(document.getElementById('vy'+i).value);
     this.synth = new Synth( this.audiolet,this.frequency,this.release,this.attack);
     this.synth.connect( this.audiolet.output );
   }
@@ -86,34 +91,36 @@ function bounce(ball){
   ball.y += ball.vy;
   ball.vy += gravity;
   if(ball.y + ball.radius > H) {
+    ball.play();
     ball.y = H - ball.radius;
     ball.vy *= -bounceFactor;
-    ball.play();
   }
   if(ball.y - ball.radius < 0) {
+    ball.play();
     ball.y = 0 + ball.radius;
     ball.vy *= -bounceFactor;
-    ball.play();
   }
   ball.x += ball.vx;
   ball.vx += gravity;
   if(ball.x + ball.radius > W) {
+    ball.play();
     ball.x = W - ball.radius;
     ball.vx *= -bounceFactor;
-    ball.play();
   }
   if(ball.x - ball.radius < 0) {
+    ball.play();
     ball.x = 0 + ball.radius;
     ball.vx *= -bounceFactor;
-    ball.play();
   }
 }
 
-function update() {
+function update(move) {
   clearCanvas();
   for(j=0;j<balls.length;j++){
     balls[j].draw();
-    bounce(balls[j]);
+    if(move==true){
+      bounce(balls[j]);
+    }
   }
 }
 
@@ -123,8 +130,49 @@ function stop() {
     clearInterval(refreshIntervalID);
 }
 function start(){
-  refreshIntervalID = setInterval(update, 1000/60);
+  refreshIntervalID = setInterval(function(){update(true);}, 1000/60);
 }
+
+//Create eventlistener
+var elem = document.getElementById('canvas'),
+    elemLeft = elem.offsetLeft,
+    elemTop = elem.offsetTop,
+    context = elem.getContext('ctx'),
+    elements = balls;
+
+// Add event listener for `click` events.
+elem.addEventListener('mousedown', function(event) {
+    var x = event.pageX - elemLeft,
+        y = event.pageY - elemTop;
+
+    // Collision detection
+    elements.forEach(function(element) {
+        if (y > element.y-15 && y < element.y+15 
+            && x > element.x-15 && x < element.x+15) {
+            console.log("drag");
+            element.drag=true;
+
+        }
+    });
+
+}, false);
+
+elem.addEventListener('mouseup', function(event) {
+    var x = event.pageX - elemLeft,
+    y = event.pageY - elemTop;
+    console.log("drop");
+    elements.forEach(function(element) {
+      if(element.drag==true){
+        element.x=x;
+        element.y=y;
+        element.drag=false;
+        update(false);
+      }
+    })
+
+
+}, false);
+
 
 //Slidebar JQuery UI
 function createSliders(i){
@@ -189,28 +237,47 @@ function createSliders(i){
         p.appendChild(attacklabel);
         p.appendChild(attackinput);
         p.appendChild(attackslider);
+
+        /*Velocity
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var velocitylabel = document.createElement("label");
+        velocitylabel.setAttribute("for","velocity"+i);
+        velocitylabel.innerHTML="Velocity";
+        var vxinput = document.createElement("input");
+        var vyinput = document.createElement("input");
+        vxinput.setAttribute("type","input");
+        vxinput.setAttribute("id","vx"+i);
+        vyinput.setAttribute("type","input");
+        vyinput.setAttribute("id","vy"+i);
+        var vxslider=document.createElement("div");
+        vxslider.setAttribute("id","vxslider"+i);
+        var vyslider=document.createElement("div");
+        vyslider.setAttribute("id","vyslider"+i)
+        p.appendChild(velocitylabel);
+        p.appendChild(vxinput);
+        p.appendChild(vxslider);
+        p.appendChild(vyinput);
+        p.appendChild(vyslider);
+        output.appendChild(div);*/
+
+        //Velocitybuttons
+        var increasevbutton = document.createElement("button");
+        increasevbutton.setAttribute("id","increasevbutton"+i);
+        increasevbutton.innerHTML="Increase speed";
+        div.appendChild(increasevbutton);
+        var decreasevbutton = document.createElement("button");
+        decreasevbutton.setAttribute("id","decreasevbutton"+i);
+        decreasevbutton.innerHTML="Decrease speed";
+        div.appendChild(decreasevbutton);
+
         output.appendChild(div);
+
     }
-    /*
-   <p>
-    <label for="frequency">Frequency:</label>
-    <input type="input" id="frequency" style="border:0; color:#f6931f; font-weight:bold;">
-    </p>
-    <div id="frequencyslider"></div>
-    <p>
-    <label for="release">Release</label>
-    <input type="input" id="release" style="border:0; color:#f6931f; font-weight:bold;">
-    </p>
-    <div id="releaseslider"></div>
-    <p>
-    <label for="attack">Attack</label>
-    <input type="input" id="attack" style="border:0; color:#f6931f; font-weight:bold;">
-    </p>
-    <div id="attackslider"></div>
-*/
+
   $(function() {
     $( "#frequencyslider" + i ).slider({
-        value:440,
+        value:246.94,
         min: 0,
         max: 1000,
         step: 1,
@@ -222,7 +289,7 @@ function createSliders(i){
     });
   $(function() {
     $( "#releaseslider" + i).slider({
-        value:0.6,
+        value:0.5,
         min: 0.01,
         max: 10,
         step: 0.01,
@@ -234,7 +301,7 @@ function createSliders(i){
     });
   $(function() {
     $( "#attackslider" + i ).slider({
-        value:0.01,
+        value:0.005,
         min: 0.001,
         max: 1,
         step: 0.001,
@@ -244,6 +311,37 @@ function createSliders(i){
       });
       $( "#attack" + i).val( $( "#attackslider" + i).slider( "value" ) );
     });
+
+  //FIX ME: A better way of adjusting speed is needed, the if-clauses does nothing right now, problem is if we change speed with addition the ball trajectory may change
+  $(document).ready(function(){
+    $("#increasevbutton"+i).click(function(){
+      if(balls[i].vx<0){
+        balls[i].vx*=2;        
+      }else{
+        balls[i].vx*=2;
+      }
+      if(balls[i].vy<0){
+        balls[i].vy*=2;
+      }else{
+        balls[i].vy*=2;
+      }
+    });
+  });
+
+  $(document).ready(function(){
+    $("#decreasevbutton"+i).click(function(){
+      if(balls[i].vx<0){
+        balls[i].vx/=2;        
+      }else{
+        balls[i].vx/=2;
+      }
+      if(balls[i].vy<0){
+        balls[i].vy/=2;
+      }else{
+        balls[i].vy/=2;
+      }
+    });
+  });
 
   //Hide & Show buttons
   $(document).ready(function(){
