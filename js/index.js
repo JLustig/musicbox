@@ -15,7 +15,7 @@ var Synth = function(audiolet,frequency,release,attack){
     //console.log(attack);
     AudioletGroup.apply(this, [audiolet, 0, 1]);
     // Basic wave
-    this.sine = new Sine(audiolet, frequency);
+    this.sine = new Triangle(audiolet, frequency);
 
     // Gain envelope
     this.gain = new Gain(audiolet);
@@ -37,13 +37,15 @@ var Synth = function(audiolet,frequency,release,attack){
 extend(Synth, AudioletGroup);
 
 var balls = [],
-    nrofballs=4,
+    nrofballs=3,
     startx=[10,0,5],
     starty=[10,-10,0],
     gravity = 0,
     bounceFactor = 1,
     audiolet,
     synth,
+    key,
+    octave,
     frequency,
     release,
     attack;
@@ -52,6 +54,9 @@ function createBall(i,startvel){return {
   x: W/2,
   y: H/2,
   drag:false,
+  scale:"min",
+
+
   
   radius: 15,
   color: 'rgb(' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ')',
@@ -71,9 +76,15 @@ function createBall(i,startvel){return {
   },
 
   play: function() {
-    this.frequency = parseFloat(document.getElementById('frequency'+i).value);
+    //this.frequency = parseFloat(document.getElementById('frequency'+i).value);
     this.attack=parseFloat(document.getElementById('attack'+i).value);
     this.release=parseFloat(document.getElementById('release'+i).value);
+    this.key=String(document.getElementById('key'+i).value);
+    this.octave=parseInt(document.getElementById('octave'+i).value);
+    console.log(this.key);
+    console.log(this.scale);
+    console.log(this.octave);
+    this.frequency = notes[ this.key ][ this.scale ][ this.octave ];
     //this.vx=parseInt(document.getElementById('vx'+i).value);
     //this.vy=parseInt(document.getElementById('vy'+i).value);
     this.synth = new Synth( this.audiolet,this.frequency,this.release,this.attack);
@@ -140,7 +151,7 @@ var elem = document.getElementById('canvas'),
     context = elem.getContext('ctx'),
     elements = balls;
 
-// Add event listener for `click` events.
+// Add event listener for mouse events.
 elem.addEventListener('mousedown', function(event) {
     var x = event.pageX - elemLeft,
         y = event.pageY - elemTop;
@@ -160,9 +171,10 @@ elem.addEventListener('mousedown', function(event) {
 elem.addEventListener('mouseup', function(event) {
     var x = event.pageX - elemLeft,
     y = event.pageY - elemTop;
-    console.log("drop");
     elements.forEach(function(element) {
-      if(element.drag==true){
+      if(element.drag==true && !(y > element.y-15 && y < element.y+15 
+            && x > element.x-15 && x < element.x+15)){
+            console.log("drop");
         element.x=x;
         element.y=y;
         element.drag=false;
@@ -170,6 +182,23 @@ elem.addEventListener('mouseup', function(event) {
       }
     })
 
+
+}, false);
+
+
+elem.addEventListener('click', function(event) {
+    var x = event.pageX - elemLeft,
+        y = event.pageY - elemTop;
+
+    // Collision detection
+    elements.forEach(function(element) {
+        if (y > element.y-15 && y < element.y+15 
+            && x > element.x-15 && x < element.x+15) {
+            console.log("click");
+            element.click=true;
+
+        }
+    });
 
 }, false);
 
@@ -193,7 +222,50 @@ function createSliders(i){
         div.setAttribute("id","sliderview"+i);
         div.setAttribute("style","display:none;");
 
-        //Frequency
+        //FIX ME: Implement better way to choose major or minor scale, maybe selectbox
+        //Scale
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var minbutton = document.createElement("button");
+        minbutton.setAttribute("id","minbutton"+i);
+        minbutton.innerHTML="Minor";
+        p.appendChild(minbutton);
+        var majbutton = document.createElement("button");
+        majbutton.setAttribute("id","majbutton"+i);
+        majbutton.innerHTML="Major";
+        p.appendChild(majbutton);
+
+        //Key
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var keylabel=document.createElement("label");
+        keylabel.setAttribute("for","key"+i);
+        keylabel.innerHTML="Note: ";
+        var keyinput = document.createElement("input");
+        keyinput.setAttribute("type","input");
+        keyinput.setAttribute("id","key"+i);
+        var keyslider = document.createElement("div");
+        keyslider.setAttribute("id","keyslider"+i)
+        p.appendChild(keylabel);
+        p.appendChild(keyinput);
+        p.appendChild(keyslider);
+
+        //Octave (?)
+        var p = document.createElement("p");
+        div.appendChild(p);
+        var octavelabel=document.createElement("label");
+        octavelabel.setAttribute("for","octave"+i);
+        octavelabel.innerHTML="Octave: ";
+        var octaveinput = document.createElement("input");
+        octaveinput.setAttribute("type","input");
+        octaveinput.setAttribute("id","octave"+i);
+        var octaveslider = document.createElement("div");
+        octaveslider.setAttribute("id","octaveslider"+i)
+        p.appendChild(octavelabel);
+        p.appendChild(octaveinput);
+        p.appendChild(octaveslider);
+
+        /*Frequency
         var p = document.createElement("p");
         div.appendChild(p);
         var frequencylabel = document.createElement("label");
@@ -206,7 +278,7 @@ function createSliders(i){
         frequencyslider.setAttribute("id","frequencyslider"+i)
         p.appendChild(frequencylabel);
         p.appendChild(frequencyinput);
-        p.appendChild(frequencyslider);
+        p.appendChild(frequencyslider); */
 
         //Release
         var p = document.createElement("p");
@@ -312,6 +384,33 @@ function createSliders(i){
       $( "#attack" + i).val( $( "#attackslider" + i).slider( "value" ) );
     });
 
+  $(function() {
+    $( "#octaveslider" + i ).slider({
+        value:0,
+        min: 0,
+        max: 9,
+        step: 1,
+        slide: function( event, ui ) {
+          $( "#octave" + i).val(ui.value);
+        }
+      });
+      $( "#octave" + i).val( $( "#octaveslider" + i).slider( "value" ) );
+    });
+
+var availablekeys = ["a", "d", "e"];
+  $(function() {
+    $( "#keyslider" + i ).slider({
+        value:0,
+        min: 0,
+        max: 2,
+        step: 1,
+        slide: function( event, ui ) {
+          $( "#key" + i).val(availablekeys[ui.value]);
+        }
+      });
+      $( "#key" + i).val( availablekeys[ $( "#keyslider" + i).slider( "value" )] );
+    });
+
   //FIX ME: A better way of adjusting speed is needed, the if-clauses does nothing right now, problem is if we change speed with addition the ball trajectory may change
   $(document).ready(function(){
     $("#increasevbutton"+i).click(function(){
@@ -343,6 +442,16 @@ function createSliders(i){
     });
   });
 
+  $(document).ready(function(){
+    $("#minbutton"+i).click(function(){
+      balls[i].scale="min";
+    });
+  });
+  $(document).ready(function(){
+    $("#majbutton"+i).click(function(){
+      balls[i].scale="maj";
+    });
+  });
   //Hide & Show buttons
   $(document).ready(function(){
     $("#ballbutton"+i).click(function(){
