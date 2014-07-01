@@ -15,7 +15,7 @@ var Synth = function(audiolet,frequency,release,attack){
     //console.log(attack);
     AudioletGroup.apply(this, [audiolet, 0, 1]);
     // Basic wave
-    this.sine = new Triangle(audiolet, frequency);
+    this.sine = new Sine(audiolet, frequency);
 
     // Gain envelope
     this.gain = new Gain(audiolet);
@@ -55,8 +55,7 @@ function createBall(i,startvel){return {
   y: H/2,
   drag:false,
   scale:"min",
-
-
+  arrow:false,
   
   radius: 15,
   color: 'rgb(' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ')',
@@ -75,15 +74,32 @@ function createBall(i,startvel){return {
     ctx.closePath();
   },
 
+  drawarrow: function(endX,endY) {
+    var startX=this.x;
+    var startY=this.y;
+    console.log("drawing",startX,startY,"to",endX,endY);
+    clearCanvas();
+    ctx.beginPath();
+    ctx.moveTo(startX, startY); 
+    ctx.lineTo(endX, endY); 
+    //ctx.moveTo()
+    ctx.stroke(); 
+    ctx.closePath();
+    balls.forEach(function(ball){ball.draw()});
+    //Rounding to nearest lower integer
+    this.vx=((endX-startX)/10) | 0;
+    this.vy=((endY-startY)/10) | 0;
+  },
+
   play: function() {
     //this.frequency = parseFloat(document.getElementById('frequency'+i).value);
     this.attack=parseFloat(document.getElementById('attack'+i).value);
     this.release=parseFloat(document.getElementById('release'+i).value);
     this.key=String(document.getElementById('key'+i).value);
     this.octave=parseInt(document.getElementById('octave'+i).value);
-    console.log(this.key);
-    console.log(this.scale);
-    console.log(this.octave);
+    //console.log(this.key);
+    //console.log(this.scale);
+    //console.log(this.octave);
     this.frequency = notes[ this.key ][ this.scale ][ this.octave ];
     //this.vx=parseInt(document.getElementById('vx'+i).value);
     //this.vy=parseInt(document.getElementById('vy'+i).value);
@@ -177,26 +193,35 @@ elem.addEventListener('mouseup', function(event) {
             console.log("drop");
         element.x=x;
         element.y=y;
-        element.drag=false;
         update(false);
       }
+      element.drag=false;
     })
 
 
 }, false);
 
+var listener = function (event) {
+  elements.forEach( function(element){
+    if(element.arrow==true){
+      element.drawarrow(event.pageX,event.pageY);
+    }
+  });
+};
 
 elem.addEventListener('click', function(event) {
     var x = event.pageX - elemLeft,
         y = event.pageY - elemTop;
-
+    elem.removeEventListener('mousemove', listener, false);
     // Collision detection
     elements.forEach(function(element) {
+        console.log("outsideclick");
+        element.arrow=false;
         if (y > element.y-15 && y < element.y+15 
             && x > element.x-15 && x < element.x+15) {
-            console.log("click");
-            element.click=true;
-
+            console.log("insideclick");
+            elem.addEventListener('mousemove', listener, false);
+            element.arrow=true;
         }
     });
 
