@@ -2,12 +2,19 @@
 var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
+//Create in-memory only canvas to use for caching at a later stage
+var cachecanvas = document.createElement("canvas"),
+    cache = cachecanvas.getContext("2d");
+
+
 // Now setting the width and height of the canvas
 var W = 760,
     H = 760;
 
 // Applying these to the canvas element
 canvas.height = H; canvas.width = W;
+
+cachecanvas.height = H; cachecanvas.width = W;
 
 var Synth = function(audiolet,frequency,release,attack){
     //console.log(frequency);
@@ -82,7 +89,6 @@ function createBall(i,startvel){return {
     ctx.beginPath();
     ctx.moveTo(startX, startY); 
     ctx.lineTo(endX, endY); 
-    //ctx.moveTo()
     ctx.stroke(); 
     ctx.closePath();
     balls.forEach(function(ball){ball.draw()});
@@ -108,6 +114,38 @@ function createBall(i,startvel){return {
   }
 
 };}
+
+function createGrid(){
+  var facShort = 0.275,
+    facLong = 1 - facShort;
+  var x=0;
+  var y=0;
+  var height=H/25;
+  var width=W/25;
+  cache.beginPath();
+  var cnt = 0;
+  for(j=width;j<W;j+=width){
+    for(i=height;i<H;i+=height){
+      cnt++;
+      cache.moveTo(x + width*facShort, y);
+      cache.lineTo(x, y + height*facShort);
+      cache.lineTo(x, y + height*facLong);
+      cache.lineTo(x + width*facShort, y + height);
+      cache.lineTo(x + width*facLong, y + height);
+      cache.lineTo(x + width, y + height*facLong);
+      cache.lineTo(x + width, y + height*facShort);
+      cache.lineTo(x + width*facLong, y);
+      cache.lineTo(x + width*facShort, y);
+      cache.stroke();
+      y+=height;
+    }
+    y=0;
+    x+=width;
+  }
+  console.log(cnt);
+  cache.closePath();  
+}
+createGrid();
 
 // When we do animations in canvas, we have to repaint the whole canvas in each frame. Either clear the whole area or paint it with some color. This helps in keeping the area clean without any repetition mess.
 function clearCanvas() {
@@ -143,6 +181,8 @@ function bounce(ball){
 
 function update(move) {
   clearCanvas();
+  //for drawing grid
+  //ctx.drawImage(cachecanvas,0,0);
   for(j=0;j<balls.length;j++){
     balls[j].draw();
     if(move==true){
