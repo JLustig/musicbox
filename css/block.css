@@ -7,7 +7,7 @@ body {
   margin: 1em auto 4em auto;
   position: relative;
   tab-size: 2;
-  width: 960px;
+  width: 825px;
 }
 
 h1 {
@@ -117,7 +117,7 @@ aside,
 }
 
 iframe {
-  width: 960px;
-  height: 760px;
+  width: 825px;
+  height: 625px;
   border: 1px solid #DEDEDE;
 }

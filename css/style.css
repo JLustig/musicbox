@@ -1,7 +1,7 @@
 #canvas {
   float:left;
-  width:760px;
-  height:760px;
+  width:625px;
+  height:625px;
 }
 
 #container{
@@ -9,7 +9,7 @@
 	float: right;
 	background-color: #232B2B;
 	width:200px;
-	height: 760px;
+	height: 625px;
 }
 
 button{
