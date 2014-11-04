@@ -6,6 +6,7 @@ function createSliders(i){
     var ballbutton = document.createElement("button");
     ballbutton.setAttribute("id","ballbutton"+i);
     ballbutton.innerHTML="Ball " +i;
+    ballbutton.setAttribute("style","background-color:"+balls[i].color);
     output.appendChild(ballbutton);
 
     output = document.getElementById('slidercontainer');

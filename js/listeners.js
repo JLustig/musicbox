@@ -68,5 +68,8 @@ elem.addEventListener('click', function(event) {
             element.arrow=true;
         }
     });
+    if(setblockcheck=true){
+        setBlock(x,y);
+    }
 
 }, false);

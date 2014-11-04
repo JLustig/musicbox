@@ -98,43 +98,82 @@ function createBall(i,startvel){return {
 
 };}
 
+function createBlock(x,y){return{
+  x:x,
+  y:y,
+
+  draw: function(){
+    ctx.drawImage(shapecachecanvas,0,0,W/nrofgridshapes,H/nrofgridshapes,this.x,this.y,W/nrofgridshapes,H/nrofgridshapes);   
+  }
+};}
+
+function createOctagon(context,x,y,width,height,facShort,facLong){
+      context.moveTo(x + width*facShort, y);
+      context.lineTo(x, y + height*facShort);
+      context.lineTo(x, y + height*facLong);
+      context.lineTo(x + width*facShort, y + height);
+      context.lineTo(x + width*facLong, y + height);
+      context.lineTo(x + width, y + height*facLong);
+      context.lineTo(x + width, y + height*facShort);
+      context.lineTo(x + width*facLong, y);
+      context.lineTo(x + width*facShort, y);
+}
+
 //Creates the grid (which is then put into the cached canvas)
 function createGrid(){
   var facShort = 0.3,
     facLong = 1 - facShort;
   var x=0;
   var y=0;
-  var height=H/nrofshapes;
-  var width=W/nrofshapes;
-  cache.beginPath();
+  var height=H/nrofgridshapes;
+  var width=W/nrofgridshapes;
+  gridcache.beginPath();
   var cnt = 0;
-    cache.strokeStyle='rgba(0,0,0,0.7)';
+    gridcache.strokeStyle='rgba(0,0,0,0.7)';
   for(j=width;j<=W;j+=width){
     for(i=height;i<=H;i+=height){
       cnt++;
-      cache.moveTo(x + width*facShort, y);
-      cache.lineTo(x, y + height*facShort);
-      cache.lineTo(x, y + height*facLong);
-      cache.lineTo(x + width*facShort, y + height);
-      cache.lineTo(x + width*facLong, y + height);
-      cache.lineTo(x + width, y + height*facLong);
-      cache.lineTo(x + width, y + height*facShort);
-      cache.lineTo(x + width*facLong, y);
-      cache.lineTo(x + width*facShort, y);
+      createOctagon(gridcache,x,y,width,height,facShort,facLong);
       y+=height;
     }
     y=0;
     x+=width;
   }
-  cache.stroke();
+  gridcache.stroke();
   console.log(cnt);
-  cache.closePath();  
+  gridcache.closePath();  
 }
 createGrid();
 
-//Draws the grid from the cached canvas to the main canvas
+//Draws the grid from the gridcached canvas to the main canvas
 function drawGrid() {
-  ctx.drawImage(cachecanvas,0,0);
+  ctx.drawImage(gridcachecanvas,0,0);
+}
+
+function createShapes() {
+  var facShort = 0.3,
+    facLong=1-facShort,
+    height=H/nrofgridshapes,
+    width=W/nrofgridshapes,
+    x=0,
+    y=0;
+  shapecache.beginPath();
+  shapecache.strokeStyle='rgba(0,0,0,0000.1';
+  shapecache.fillStyle='#545454';
+  createOctagon(shapecache,x,y,width,height,facShort,facLong);
+  shapecache.stroke();
+  shapecache.fill();
+  shapecache.closePath;
+}
+createShapes();
+
+function setBlock(x,y) {
+  ctx.drawImage(shapecachecanvas,0,0,W/nrofgridshapes,H/nrofgridshapes,x,y,W/nrofgridshapes,H/nrofgridshapes);
+  console.log("block");
+  blocks.splice(blocks.length+1,0,createBlock(x,y));
+  createBlock();
+  correctpaths();
+  update(false);
 }
 
 // When we do animations in canvas, we have to repaint the whole canvas in each frame. Either clear the whole area or paint it with some color. This helps in keeping the area clean without any repetition mess.
@@ -145,38 +184,43 @@ function clearCanvas() {
 function bounce(ball){
   ball.y += ball.vy;
   ball.vy += gravity;
+  ball.x += ball.vx;
+  ball.vx += gravity;
   if(ball.y + ball.radius > H) {
     ball.play();
     ball.y = H - ball.radius;
     ball.vy *= -bounceFactor;
-  }
-  if(ball.y - ball.radius < 0) {
+  }else if(ball.y - ball.radius < 0) {
     ball.play();
     ball.y = 0 + ball.radius;
     ball.vy *= -bounceFactor;
   }
-  ball.x += ball.vx;
-  ball.vx += gravity;
-  if(ball.x + ball.radius > W) {
+  else if(ball.x + ball.radius > W) {
     ball.play();
     ball.x = W - ball.radius;
     ball.vx *= -bounceFactor;
   }
-  if(ball.x - ball.radius < 0) {
+  else if(ball.x - ball.radius < 0) {
     ball.play();
     ball.x = 0 + ball.radius;
     ball.vx *= -bounceFactor;
-  }
+  }//else if()
 }
 
 //Forces the balls to align within the shapes of the grid
 function correctpaths(){
 
   balls.forEach(function(ball){
-    var diff = ball.x % (W/nrofshapes);
-    ball.x -= diff-(W/nrofshapes)/2;
-    diff = ball.y % (H/nrofshapes);
-    ball.y-=diff-(H/nrofshapes)/2;
+    var diff = ball.x % (W/nrofgridshapes);
+    ball.x -= diff-(W/nrofgridshapes)/2;
+    diff = ball.y % (H/nrofgridshapes);
+    ball.y-=diff-(H/nrofgridshapes)/2;
+  })
+  blocks.forEach(function(block){
+    diff = block.x % (W/nrofgridshapes);
+    block.x-=diff;
+    diff = block.y % (H/nrofgridshapes);
+    block.y-=diff;
   })
 }
 
@@ -188,6 +232,9 @@ function update(move) {
       bounce(balls[j]);
     }
     balls[j].draw();
+  }
+  for(k=0;k<blocks.length;k++){
+    blocks[k].draw();
   }
 }
 

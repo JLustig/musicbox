@@ -7,14 +7,19 @@ var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
 //Create in-memory only canvas to use for caching at a later stage
-var cachecanvas = document.createElement("canvas"),
-    cache = cachecanvas.getContext("2d");
+var gridcachecanvas = document.createElement("canvas"),
+    gridcache = gridcachecanvas.getContext("2d");
+
+var shapecachecanvas = document.createElement("canvas"),
+	shapecache = shapecachecanvas.getContext("2d");
 
 // Applying these to the canvas element
 canvas.height = H; canvas.width = W;
-cachecanvas.height = H; cachecanvas.width = W;
+gridcachecanvas.height = H; gridcachecanvas.width = W;
+shapecachecanvas.height = H; shapecachecanvas.width = W;
 
 var balls = [],
+	blocks = [],
     nrofballs=3,
     ballradius=12.5,
     startx=[10,0,5],
@@ -28,7 +33,8 @@ var balls = [],
     frequency,
     release,
     attack,
-    nrofshapes=25,
+    nrofgridshapes=25,
     paused=true,
     validX=[],
-    validY=[];
+    validY=[],
+    setblockcheck=false;
