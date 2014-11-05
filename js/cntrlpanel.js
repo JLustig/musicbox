@@ -5,8 +5,8 @@ function createSliders(i){
 
     var ballbutton = document.createElement("button");
     ballbutton.setAttribute("id","ballbutton"+i);
-    ballbutton.innerHTML="Ball " +i;
-    ballbutton.setAttribute("style","background-color:"+balls[i].color);
+    ballbutton.innerHTML="Ball " +(i+1);
+
     output.appendChild(ballbutton);
 
     output = document.getElementById('slidercontainer');
@@ -14,7 +14,7 @@ function createSliders(i){
     if(!document.getElementById('slidercontainer'+i))
     {
         var div = document.createElement("div");
-        div.innerHTML="Ball nr: " +i;
+        div.innerHTML="Ball nr: " +(i+1);
         div.setAttribute("id","sliderview"+i);
         div.setAttribute("style","display:none;");
 
@@ -130,6 +130,8 @@ function createSliders(i){
         output.appendChild(div);*/
 
         //Velocitybuttons
+        //Not needed since implementing drag and drop
+        /*
         var increasevbutton = document.createElement("button");
         increasevbutton.setAttribute("id","increasevbutton"+i);
         increasevbutton.innerHTML="Increase speed";
@@ -138,6 +140,7 @@ function createSliders(i){
         decreasevbutton.setAttribute("id","decreasevbutton"+i);
         decreasevbutton.innerHTML="Decrease speed";
         div.appendChild(decreasevbutton);
+        */
 
         output.appendChild(div);
 

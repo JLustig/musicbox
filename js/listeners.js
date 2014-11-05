@@ -66,9 +66,10 @@ elem.addEventListener('click', function(event) {
             console.log("insideclick");
             elem.addEventListener('mousemove', listener, false);
             element.arrow=true;
+            return 0
         }
     });
-    if(setblockcheck=true){
+    if(setblockcheck==true){
         setBlock(x,y);
     }
 

@@ -167,7 +167,14 @@ function createShapes() {
 }
 createShapes();
 
+
 function setBlock(x,y) {
+  balls.forEach(function(ball){
+    console.log(ball.x,ball.y,x,y)
+    if(ball.x==x & ball.y==y){
+      return 0
+    }
+  })
   ctx.drawImage(shapecachecanvas,0,0,W/nrofgridshapes,H/nrofgridshapes,x,y,W/nrofgridshapes,H/nrofgridshapes);
   console.log("block");
   blocks.splice(blocks.length+1,0,createBlock(x,y));
