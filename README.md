@@ -4,4 +4,6 @@ Bouncing balls making noise
 
 A project to learn javascript
 
-<a href="http://jlustig.github.io/musicbox/">Demo</a>
+Horrible code, but fun demo. Written in 2014.
+
+<a href="http://joakimlustig.github.io/musicbox/">Demo</a>
